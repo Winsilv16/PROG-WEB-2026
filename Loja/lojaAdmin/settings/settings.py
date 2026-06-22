@@ -1,14 +1,12 @@
 import os
 from pathlib import Path
 
-# Ajustado para a estrutura do ponto '.' do laboratório
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = 'django-insecure-padrao'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
-# --- CORREÇÃO DEFINITIVA DO ERRO 403 (CSRF) PARA O CODESPACES ---
 CSRF_TRUSTED_ORIGINS = [
     'https://*.github.dev',
     'https://*.app.github.dev',
@@ -18,7 +16,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8080',
 ]
 
-# Informa ao Django que o Codespaces está mascarando uma conexão HTTPS segura
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 INSTALLED_APPS = [
@@ -28,7 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'loja',  # <-- PASSO DO LAB: Adicionado o aplicativo da loja
+    'loja', 
 ]
 
 MIDDLEWARE = [
@@ -76,7 +73,6 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-# --- CONFIGURAÇÃO EXIGIDA NA PÁGINA 35 DO PDF DO CAPÍTULO 3 ---
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

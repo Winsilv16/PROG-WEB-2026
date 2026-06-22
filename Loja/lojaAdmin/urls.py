@@ -11,7 +11,7 @@ from loja.views import (
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', list_produto_view, name='home'), # Página inicial vai direto para a lista
+    path('', list_produto_view, name='home'), 
     path('produto', list_produto_view, name='produto'),
     path('produto/novo', save_produto_view, name='create_produto'),
     path('produto/<int:id>', produto_detail_view, name='produto_detail'),
@@ -19,6 +19,5 @@ urlpatterns = [
     path('produto/excluir/<int:id>', delete_produto_view, name='delete_produto'),
 ]
 
-# Permite que o Django sirva os arquivos de mídia (Imagens) durante o desenvolvimento [cite: 4]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

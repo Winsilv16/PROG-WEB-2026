@@ -8,6 +8,19 @@ SECRET_KEY = 'django-insecure-padrao'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+# --- CORREÇÃO DEFINITIVA DO ERRO 403 (CSRF) PARA O CODESPACES ---
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.github.dev',
+    'https://*.app.github.dev',
+    'https://localhost:8080',
+    'http://localhost:8080',
+    'https://127.0.0.1:8080',
+    'http://127.0.0.1:8080',
+]
+
+# Informa ao Django que o Codespaces está mascarando uma conexão HTTPS segura
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

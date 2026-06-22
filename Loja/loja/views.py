@@ -1,106 +1,63 @@
-from django.shortcuts import render, redirect
-from loja.models import Produto
-from datetime import timedelta
-from django.utils import timezone
+import os
+from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
+from .models import Produto, Categoria, Fabricante
 
-# ==========================================
-# 1. VIEW DA PÁGINA INICIAL (HOME)
-# ==========================================
-def home_view(request):
-    produto = request.GET.get("produto")
+# LISTAGEM
+def list_produto_view(request):
     produtos = Produto.objects.all()
-    if produto is not None:
-        produtos = produtos.filter(Produto__contains=produto)
+    return render(request, 'produto/produto.html', {'produtos': produtos})
+
+# INSERIR / EDITAR
+def save_produto_view(request, id=None):
+    # Se passar ID, edita; se não, cria um novo
+    produto = get_object_or_404(Produto, id=id) if id else Produto()
+    
+    if request.method == 'POST':
+        produto.produto = request.POST.get('produto')
+        produto.destaque = 'destaque' in request.POST
+        produto.promocao = 'promocao' in request.POST
+        produto.msg_promocao = request.POST.get('msg_promocao')
+        produto.preco = request.POST.get('preco') or 0.00
+        
+        # Associação de chaves estrangeiras (Categorias e Fabricantes) 
+        cat_id = request.POST.get('categoria')
+        fab_id = request.POST.get('fabricante')
+        if cat_id: produto.categoria = Categoria.objects.get(id=cat_id)
+        if fab_id: produto.fabricante = Fabricante.objects.get(id=fab_id)
+        
+        # Tratamento de Imagem (Upload) [cite: 4]
+        if request.FILES.get('image'):
+            produto.image = request.FILES['image']
+            
+        produto.save()
+        return redirect('produto')
+
+    # Dados para renderizar nos selects do formulário 
+    categorias = Categoria.objects.all()
+    fabricantes = Fabricante.objects.all()
     
     context = {
-        'produtos': produtos
+        'produto': produto,
+        'categorias': categorias,
+        'fabricantes': fabricantes
     }
-    return render(request, template_name='home/home.html', context=context, status=200)
+    return render(request, 'produto/produto_form.html', context)
 
+# VISUALIZAR DETALHES 
+def produto_detail_view(request, id):
+    produto = get_object_or_404(Produto, id=id)
+    return render(request, 'produto/produto_detail.html', {'produto': produto})
 
-# ==========================================
-# 2. VIEWS DO CRUD DE PRODUTOS
-# ==========================================
-
-# Listar Produtos (GET)
-def list_produto_view(request, id=None):
-    produto = request.GET.get("produto")
-    destaque = request.GET.get("destaque")
-    promocao = request.GET.get("promocao")
-    categoria = request.GET.get("categoria")
-    fabricante = request.GET.get("fabricante")
-    dias = request.GET.get("dias")
+# EXCLUIR PRODUTO (Apaga a imagem do storage) [cite: 4, 5]
+def delete_produto_view(request, id):
+    produto = get_object_or_404(Produto, id=id)
     
-    produtos = Produto.objects.all()
-    
-    if produto is not None:
-        produtos = produtos.filter(Produto__contains=produto)
-    if promocao is not None:
-        produtos = produtos.filter(promocao=promocao)
-    if destaque is not None:
-        produtos = produtos.filter(destaque=destaque)
-    if categoria is not None:
-        produtos = produtos.filter(categoria__Categoria=categoria)
-    if fabricante is not None:
-        produtos = produtos.filter(fabricante__Fabricante=fabricante)
-    if dias is not None:
-        now = timezone.now() - timedelta(days=int(dias))
-        produtos = produtos.filter(criado_em__gte=now)
-    if id is not None:
-        produtos = produtos.filter(id=id)
-        
-    context = { 'produtos': produtos }
-    return render(request, template_name='produto/produto.html', context=context, status=200)
-
-# Interface Editar (GET)
-def edit_produto_view(request, id=None):
-    produto = Produto.objects.filter(id=id).first()
-    context = { 'produto': produto }
-    return render(request, template_name='produto/produto-edit.html', context=context, status=200)
-
-# Salvar Edição (POST)
-def edit_produto_postback(request):
     if request.method == 'POST':
-        id = request.POST.get("id")
-        produto = request.POST.get("Produto")
-        destaque = request.POST.get("destaque")
-        promocao = request.POST.get("promocao")
-        msgPromocao = request.POST.get("msgPromocao")
+        # Se houver imagem associada, apaga o arquivo físico [cite: 5]
+        if produto.image and os.path.exists(produto.image.path):
+            os.remove(produto.image.path)
+        produto.delete()
+        return redirect('produto')
         
-        try:
-            obj_produto = Produto.objects.filter(id=id).first()
-            obj_produto.Produto = produto
-            obj_produto.destaque = (destaque is not None)
-            obj_produto.promocao = (promocao is not None)
-            if msgPromocao is not None:
-                obj_produto.msgPromocao = msgPromocao
-            obj_produto.save()
-        except Exception as e:
-            print("Erro salvando edição: %s" % e)
-            
-    return redirect("/produto")
-
-# Ver Detalhes (GET)
-def details_produto_view(request, id=None):
-    produto = Produto.objects.filter(id=id).first()
-    context = { 'produto': produto }
-    return render(request, template_name='produto/produto-details.html', context=context, status=200)
-
-# Interface Apagar (GET)
-def delete_produto_view(request, id=None):
-    produto = Produto.objects.filter(id=id).first()
-    context = { 'produto': produto }
-    return render(request, template_name='produto/produto-delete.html', context=context, status=200)
-
-# Efetivar Exclusão (POST)
-def delete_produto_postback(request):
-    if request.method == 'POST':
-        id = request.POST.get("id")
-        try:
-            obj_produto = Produto.objects.filter(id=id).first()
-            if obj_produto:
-                obj_produto.delete()
-        except Exception as e:
-            print("Erro ao excluir produto: %s" % e)
-            
-    return redirect("/produto")
+    return render(request, 'produto/produto_confirm_delete.html', {'produto': produto})

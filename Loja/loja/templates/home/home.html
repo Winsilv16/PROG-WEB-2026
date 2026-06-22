@@ -1,45 +1,30 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
-{% block title %}Início{% endblock %}
-{% block styles %}
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-{% endblock %}
+
+{% block title %}- Home{% endblock %}
 
 {% block content %}
-<div id="content">
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-12 col-md-6 col-lg-6 offset-sm-0">
-                <form action="{% url 'home' %}" method="GET">
-                    <h3>Buscar produtos</h3>
-                    <div class="form-row">
-                        <div class="col form-group">
-                            <input type="text" class="form-control" name="produto" placeholder="nome do produto">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="col form-group mb-3">
-                            <button type="submit" class="btn btn-primary">Buscar</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="container my-5">
+    <div class="jumbotron bg-light shadow-sm text-center">
+        <h1 class="display-4 font-weight-bold">Bem-vindo à nossa Loja!</h1>
+        <p class="lead text-muted">Encontre os melhores produtos pelos melhores preços.</p>
+        <hr class="my-4">
+        
+        <form action="{% url 'home' %}" method="GET" class="form-inline justify-content-center">
+            <input class="form-control mr-sm-2 w-50" type="search" name="search" placeholder="Buscar produtos..." aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit"><i class="fa fa-search"></i> Buscar</button>
+        </form>
+    </div>
 
-        <div class="alert alert-info">Produtos encontrados [{{ produtos|length }}]</div>
-        <div class="row">
-            {% for prod in produtos %}
-            <div class="col-xs-9 col-md-3 col-lg-3">
-                <div class="card mb-4">
-                    <div class="image-circle" style="background-image: url('/media/{{ prod.image }}');"></div>
-                    <div class="card-body">
-                        <h5 class="card-title">{{ prod.Produto }}</h5>
-                        <a href="{% url 'home' %}" class="btn btn-primary btn-card"><i class="fa fa-search"></i> Ver</a>
-                        <button class="btn btn-warning btn-card"><i class="fa fa-heart"></i> Favoritar</button>
-                    </div>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title font-weight-bold">Conheça nosso Catálogo</h5>
+                    <p class="card-text text-muted flex-grow-1">Veja todos os produtos que separamos para você hoje.</p>
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-card mt-auto">Acessar</a>
                 </div>
             </div>
-            {% endfor %}
         </div>
     </div>
 </div>

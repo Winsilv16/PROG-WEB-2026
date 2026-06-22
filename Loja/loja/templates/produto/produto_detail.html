@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5" style="max-width: 600px;">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">{{ produto.produto }}</h3>
+        </div>
+        <div class="card-body">
+            {% if produto.image %}
+                <div class="text-center mb-4">
+                    <img src="{{ produto.image.url }}" alt="Imagem" class="img-fluid rounded" style="max-height: 250px;">
+                </div>
+            {% endif %}
+            
+            <p><strong>Preço:</strong> R$ {{ produto.preco|floatformat:2 }}</p>
+            <p><strong>Categoria:</strong> {{ produto.categoria.categoria|default:"Não informada" }}</p>
+            <p><strong>Fabricante:</strong> {{ produto.fabricante.fabricante|default:"Não informado" }}</p>
+            <p><strong>Destaque:</strong> {% if produto.destaque %}Sim{% else %}Não{% endif %}</p>
+            <p><strong>Promoção:</strong> {% if produto.promocao %}Sim ({% endif %}{{ produto.msg_promocao|default:"Sem mensagem" }}{% if produto.promocao %}){% endif %}</p>
+            
+            <hr>
+            <a href="{% url 'produto' %}" class="btn btn-secondary btn-block font-weight-bold">Voltar para a Lista</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

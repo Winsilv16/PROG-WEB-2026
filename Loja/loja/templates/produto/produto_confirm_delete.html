@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5 text-center" style="max-width: 500px;">
+    <div class="card border-warning p-4 shadow-sm">
+        <h3 class="text-danger mb-3">Excluir Produto?</h3>
+        <p>Tem certeza de que deseja apagar permanentemente o produto <strong>{{ produto.produto }}</strong>?</p>
+        
+        <ul class="list-group list-group-flush text-left my-3">
+            <li class="list-group-item"><strong>Categoria:</strong> {{ produto.categoria.categoria|default:"Nenhuma" }}</li>
+            <li class="list-group-item"><strong>Fabricante:</strong> {{ produto.fabricante.fabricante|default:"Nenhum" }}</li>
+        </ul>
+
+        {% if produto.image %}
+            <div class="my-3">
+                <img src="{{ produto.image.url }}" alt="Imagem" class="img-thumbnail" style="max-height: 120px;">
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger font-weight-bold px-4 mr-2">Confirmar Exclusão</button>
+            <a href="{% url 'produto' %}" class="btn btn-secondary font-weight-bold px-4">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,29 +1,28 @@
 from django.contrib import admin
 from django.urls import path
-from django.conf import settings
-from django.conf.urls.static import static
-
-# Importa as views diretamente do arquivo loja/views.py
-from loja.views import home_view, list_produto_view
+from loja.views import (
+    home_view,
+    list_produto_view, 
+    edit_produto_view, 
+    edit_produto_postback, 
+    details_produto_view,
+    delete_produto_view,
+    delete_produto_postback
+)
 
 urlpatterns = [
-    # Rota do Painel Administrativo
+    # Rota do Painel de Administração do Django
     path('admin/', admin.site.urls),
+
+    # Rota da Home (Página Inicial)
+    path("", home_view, name='home'),
     
-    # IMPORTANTE: Colocamos os caminhos de produtos primeiro para o Django não se confundir
-    path('produto/', list_produto_view, name='produtos'),
-    path('produto/<int:id>', list_produto_view, name='produto'),
-    
-    # A página inicial (vazia) fica por último
-    path('', home_view, name='home'),
+    # Rotas do CRUD de Produtos
+    path("produto", list_produto_view, name='produto'),
+    path("produto/<int:id>", list_produto_view, name='produto_id'),
+    path("produto/edit/<int:id>", edit_produto_view, name='edit_produto'),
+    path("produto/edit", edit_produto_postback, name='edit_produto_postback'),
+    path("produto/details/<int:id>", details_produto_view, name='details_produto'),
+    path("produto/delete/<int:id>", delete_produto_view, name='delete_produto'),
+    path("produto/delete", delete_produto_postback, name='delete_produto_postback'),
 ]
-
-# Configuração de arquivos estáticos e mídia
-if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Customização visual do painel admin
-admin.site.site_header = 'Gerenciamento da Loja Virtual'
-admin.site.site_title = 'Loja Admin'
-admin.site.index_title = 'Área Administrativa do Painel'

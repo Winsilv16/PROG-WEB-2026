@@ -1,53 +1,106 @@
-from django.http import HttpResponse
-from django.utils import timezone
+from django.shortcuts import render, redirect
+from loja.models import Produto
 from datetime import timedelta
-from loja.models import Produto 
+from django.utils import timezone
 
+# ==========================================
+# 1. VIEW DA PÁGINA INICIAL (HOME)
+# ==========================================
 def home_view(request):
-    return HttpResponse("<h1>Olá Mundo! (Home)</h1>")
+    produto = request.GET.get("produto")
+    produtos = Produto.objects.all()
+    if produto is not None:
+        produtos = produtos.filter(Produto__contains=produto)
+    
+    context = {
+        'produtos': produtos
+    }
+    return render(request, template_name='home/home.html', context=context, status=200)
 
+
+# ==========================================
+# 2. VIEWS DO CRUD DE PRODUTOS
+# ==========================================
+
+# Listar Produtos (GET)
 def list_produto_view(request, id=None):
-    # 1. Captura dos parâmetros vindos da URL via método GET
-    produto_param = request.GET.get("produto")
+    produto = request.GET.get("produto")
     destaque = request.GET.get("destaque")
     promocao = request.GET.get("promocao")
+    categoria = request.GET.get("categoria")
+    fabricante = request.GET.get("fabricante")
     dias = request.GET.get("dias")
-
-    # 2. Inicializa a QuerySet trazendo todos os produtos
+    
     produtos = Produto.objects.all()
-
-    # 3. Aplicação dos filtros do Django ORM
-    if produto_param is not None:
-        # Se no seu models.py o campo for 'produto' minúsculo:
-        try:
-            produtos = produtos.filter(produto__contains=produto_param)
-        except Exception:
-            # Caso o seu campo no models.py se chame 'nome', ele usa esse aqui:
-            produtos = produtos.filter(nome__contains=produto_param)
-
-    if destaque is not None:
-        produtos = produtos.filter(destaque=destaque)
-
+    
+    if produto is not None:
+        produtos = produtos.filter(Produto__contains=produto)
     if promocao is not None:
         produtos = produtos.filter(promocao=promocao)
-
+    if destaque is not None:
+        produtos = produtos.filter(destaque=destaque)
+    if categoria is not None:
+        produtos = produtos.filter(categoria__Categoria=categoria)
+    if fabricante is not None:
+        produtos = produtos.filter(fabricante__Fabricante=fabricante)
+    if dias is not None:
+        now = timezone.now() - timedelta(days=int(dias))
+        produtos = produtos.filter(criado_em__gte=now)
     if id is not None:
         produtos = produtos.filter(id=id)
+        
+    context = { 'produtos': produtos }
+    return render(request, template_name='produto/produto.html', context=context, status=200)
 
-    # 4. Filtro por quantidade de dias cadastrados
-    if dias is not None:
+# Interface Editar (GET)
+def edit_produto_view(request, id=None):
+    produto = Produto.objects.filter(id=id).first()
+    context = { 'produto': produto }
+    return render(request, template_name='produto/produto-edit.html', context=context, status=200)
+
+# Salvar Edição (POST)
+def edit_produto_postback(request):
+    if request.method == 'POST':
+        id = request.POST.get("id")
+        produto = request.POST.get("Produto")
+        destaque = request.POST.get("destaque")
+        promocao = request.POST.get("promocao")
+        msgPromocao = request.POST.get("msgPromocao")
+        
         try:
-            now = timezone.now()
-            now = now - timedelta(days=int(dias))
-            produtos = produtos.filter(criado_em__gte=now)
-        except Exception:
-            pass
+            obj_produto = Produto.objects.filter(id=id).first()
+            obj_produto.Produto = produto
+            obj_produto.destaque = (destaque is not None)
+            obj_produto.promocao = (promocao is not None)
+            if msgPromocao is not None:
+                obj_produto.msgPromocao = msgPromocao
+            obj_produto.save()
+        except Exception as e:
+            print("Erro salvando edição: %s" % e)
+            
+    return redirect("/produto")
 
-    # 5. Imprime o resultado do ORM no console do terminal
-    print("\n========== [ CAPÍTULO 6 - ORM CONSOLE ] ==========")
-    print(f"Produtos encontrados: {produtos}")
-    print("==================================================\n")
+# Ver Detalhes (GET)
+def details_produto_view(request, id=None):
+    produto = Produto.objects.filter(id=id).first()
+    context = { 'produto': produto }
+    return render(request, template_name='produto/produto-details.html', context=context, status=200)
 
-    # Retorno visual padrão para o navegador
-    id_exibicao = id if id is not None else 0
-    return HttpResponse('<h1>Produto de id %s!</h1>' % id_exibicao)
+# Interface Apagar (GET)
+def delete_produto_view(request, id=None):
+    produto = Produto.objects.filter(id=id).first()
+    context = { 'produto': produto }
+    return render(request, template_name='produto/produto-delete.html', context=context, status=200)
+
+# Efetivar Exclusão (POST)
+def delete_produto_postback(request):
+    if request.method == 'POST':
+        id = request.POST.get("id")
+        try:
+            obj_produto = Produto.objects.filter(id=id).first()
+            if obj_produto:
+                obj_produto.delete()
+        except Exception as e:
+            print("Erro ao excluir produto: %s" % e)
+            
+    return redirect("/produto")

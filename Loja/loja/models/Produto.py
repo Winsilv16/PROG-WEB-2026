@@ -3,16 +3,20 @@ from .Categoria import Categoria
 from .Fabricante import Fabricante
 
 class Produto(models.Model):
-    Produto = models.CharField(null=False, max_length=100)
-    destaque = models.BooleanField(default=True)
-    promocao = models.BooleanField(default=True)
-    msgPromocao = models.CharField(null=True, max_length=100)
-    preco = models.DecimalField(max_digits=8, decimal_places=2)
-    categoria = models.ForeignKey(Categoria, null=True, related_name='categoria', on_delete=models.SET_NULL)
-    fabricante = models.ForeignKey(Fabricante, null=True, related_name='fabricante', on_delete=models.SET_NULL)
-    criado_em = models.DateTimeField(auto_now_add=True)
-    alterado_em = models.DateTimeField(auto_now=True)
-    image = models.ImageField(null=True, blank=True)  # Campo de Imagem da pág 35
+    produto = models.CharField(max_length=200)
+    preco = models.DecimalField(max_length=10, decimal_places=2, max_digits=10, verbose_name='Preço')
+    descricao = models.TextField(default='')
+    estoque = models.IntegerField(default=0)
+    destaque = models.BooleanField(default=False)
+    disponivel = models.BooleanField(default=True)
+    imagem = models.ImageField(upload_to='produtos/', null=True, blank=True)
+    
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    fabricante = models.ForeignKey(Fabricante, on_delete=models.CASCADE)
 
     def __str__(self):
-        return '{}'.format(self.Produto)
+        return self.produto
+
+    class Meta:
+        verbose_name = 'Produto'
+        verbose_name_plural = 'Produtos'
